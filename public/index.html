@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="/images/tom.png">
+    <title>Chat - TomChat</title>
+    <style>
+         @import url('https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&display=swap');
+
+        body{
+            font-family: Silkscreen;
+            background-image: url(/images/flowers.png);
+            background-repeat: no-repeat;
+            background-size: cover;
+            background-attachment: fixed;
+            /* Footer */
+            min-height: 100dvh;
+            display: grid;
+            grid-template-rows: auto 1fr auto; 
+            margin: 0;
+            text-align: center;
+        }
+
+        header{
+            font-family: Silkscreen;
+            border-radius: 30px;
+            backdrop-filter: blur(30px); 
+            -webkit-backdrop-filter: blur(30px);
+            margin-left: 40px;
+            margin-right: 40px;
+            margin-top: 20px;
+            margin-bottom: 20px;
+            border: 3px solid antiquewhite;
+        }
+        button{
+            font-family: Silkscreen;
+            background-color: rgb(255, 112, 172);
+            border-color: rgb(239, 104, 160);
+        }
+    
+        #chat-form {
+            display: flex;
+            padding: 15px;
+            border-top: 1px solid #fd9fff;
+        }
+        #msg-input {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 20px;
+            outline: none;
+        }     
+    </style>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        const form = document.getElementById('chat-form');
+        const input = document.getElementById('msg-input');
+        const messagesDiv = document.getElementById('messages');
+
+        // Prompt user for a name when they join
+        const username = prompt("Enter your username:") || "Anonymous";
+
+        form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        if (input.value.trim()) {
+            // Send payload containing username and content
+            socket.emit('chatMessage', {
+            user: username,
+            text: input.value
+            });
+            input.value = '';
+        }
+        });
+
+        // Listen for incoming broadcasts from the server
+        socket.on('chatMessage', (data) => {
+        const item = document.createElement('div');
+        item.classList.add('message');
+        
+        // Highlight your own messages distinctively
+        if (data.user === username) {
+            item.classList.add('my-message');
+        }
+        
+        item.innerHTML = `<strong>${data.user}:</strong> ${data.text}`;
+        messagesDiv.appendChild(item);
+        
+        // Auto-scroll to the newest message
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        });
+    </script>
+</head>
+<body>
+    <header>
+        <h1>TomChat</h1>
+        <a href="/preSign/"><button class="addaccbtn">Access existing account</button></a>
+    </header>
+    <main>
+        <div id="chat-container">
+            <div id="messages"></div>
+            <form id="chat-form">
+                <input id="msg-input" type="text" placeholder="Type a message..." autocomplete="off" required>
+                <button type="submit">Send</button>
+            </form>
+        </div>
+    </main>
+</body>
+</html>
